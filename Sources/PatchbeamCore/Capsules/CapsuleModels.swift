@@ -58,7 +58,7 @@ public enum CapsuleStatus: String, Codable, Sendable, CaseIterable {
         case .cancelling: "Stopping…"
         case .cancelled: "Stopped"
         case .failed: "Failed"
-        case .applied: "Applied to your branch"
+        case .applied: "Applied to your working tree"
         case .kept: "Kept for review"
         case .discarded: "Discarded"
         case .interrupted: "Interrupted"
