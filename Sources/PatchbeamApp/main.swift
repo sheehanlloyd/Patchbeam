@@ -1,2 +1,11 @@
-// Temporary entry point; the notch app shell lands in Gate 1.
-print("Patchbeam app shell not built yet")
+import AppKit
+
+// AppKit lifecycle: a menu-bar agent app (LSUIElement) whose UI lives in the notch panel.
+MainActor.assumeIsolated {
+    let app = NSApplication.shared
+    let delegate = AppDelegate()
+    app.delegate = delegate
+    withExtendedLifetime(delegate) {
+        app.run()
+    }
+}
