@@ -11,7 +11,7 @@ Generated from executed commands on 2026-11-12. Each line is one of three things
 | OS / arch | macOS 26.5.1 (25F80), arm64 |
 | Toolchain | Xcode 26.6 (17F113), Apple Swift 6.3.3; CI: GitHub `macos-15` runner, Xcode 16 |
 | Git / Python | 2.51.0 / 3.14.7 |
-| Provider CLI | Claude Code 2.1.252 (standalone CLI **signed out**); Codex 0.93.0 **broken install** |
+| Provider CLI | Claude Code 2.1.252, auto-updated to 2.1.322 on 2026-11-12 (standalone CLI **signed out**: re-checked 2026-11-12 with `claude auth status` and a real `-p` call, which returned `authentication_failed`); Codex 0.93.0 **broken install** |
 | App binary SHA-256 | `2f3bc8add6a0b1ef8af5a6ec7e710a2dd255dc8f5fae7375327357be3da9de60` (`Patchbeam.app/Contents/MacOS/Patchbeam` inside the published DMG, build 17) |
 | Preview DMG SHA-256 | `f1c3fb9b7d46b7d1d1b55eafc8fbaf8f95f1ccefc599341790822485b0bd42fb`, published as pre-release [v0.1.0-preview](https://github.com/sheehanlloyd/Patchbeam/releases/tag/v0.1.0-preview). Re-downloaded from GitHub: `shasum -c` OK. |
 | Signing | Ad-hoc only (`codesign --sign -`, hardened runtime). **Not** Developer ID signed, **not** notarized. `spctl --assess` → `rejected` (expected). |
@@ -51,7 +51,7 @@ Generated from executed commands on 2026-11-12. Each line is one of three things
 | Keyboard, hover/click, focus, animation, accessibility | **Partially tested** | Keyboard shortcuts, VoiceOver labels and reduced-motion paths are implemented. The UI flow was exercised through `--autodemo` (model-driven). **Not tested:** pointer hover/click by a person, VoiceOver walkthrough, Increase Contrast. |
 | Diagnostic paste/drop + repo selection | **Passed (logic) / Partially tested (UI)** | `DiagnosticsTests` (10), intake frames. Drag-and-drop and the NSOpenPanel weren't exercised by automation. |
 | Git worktree, base commit, dirty warning | **Passed** | `GitIntegrationTests` (20), `dirtySourceIsWarnedAndUntouched` |
-| One working live provider adapter | **Built, live run Not tested** | `ClaudeCodeAdapter`: argv confirmed by the real CLI's `system/init`; captured real stream contract test; live probe → `notAuthenticated`; `patchbeam-cli run … --yes` fails closed with `PB-AGENT-AUTH` and creates no worktree. **A logged-in repair has not run.** |
+| One working live provider adapter | **Built, live run Not tested** | `ClaudeCodeAdapter`: argv confirmed by the real CLI's `system/init` on **2.1.252 and 2.1.322**; contract tests run against real streams captured from both versions; live probe → `notAuthenticated`; `patchbeam-cli run … --yes` fails closed with `PB-AGENT-AUTH` and creates no worktree. **A logged-in repair has not run.** |
 | Demo adapter separately labeled | **Passed** | Every DemoAgent event has `scripted=true`; the "Demo — no model used" badge appears in every frame |
 | Events, approvals, cancellation, error paths | **Passed** | Approval allow/deny/expiry/replay, process-group cancel, transport failure, refusal, auth failure (`AgentTests`, `GoldenPathTests`) |
 | Verification keeps exit code, logs, fingerprint | **Passed** | `VerificationRunnerTests` (exit 0/1, signal 9, timeout, unapproved, missing tool, escape), proof cards |

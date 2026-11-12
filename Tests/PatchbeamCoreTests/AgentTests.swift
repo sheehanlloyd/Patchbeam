@@ -18,8 +18,10 @@ func parse(_ file: String) throws -> (events: [AgentEvent], parser: ClaudeStream
 
 @Suite("Claude Code stream contract")
 struct ClaudeStreamTests {
-    @Test func capturedUnauthenticatedStreamMapsToSignInFailure() throws {
-        let (events, _) = try parse("unauthenticated-2.1.252.jsonl")
+    /// Real streams captured from two Claude Code versions with Patchbeam's exact argv.
+    @Test(arguments: ["unauthenticated-2.1.252.jsonl", "unauthenticated-2.1.322.jsonl"])
+    func capturedUnauthenticatedStreamMapsToSignInFailure(_ file: String) throws {
+        let (events, _) = try parse(file)
         #expect(events.first?.kind == .sessionStarted)
         #expect(events.first?.metadata["tools"] == "Edit,Read,Write", "scoped tool set confirmed by the real CLI")
         #expect(events.first?.metadata["permissionMode"] == "acceptEdits")
