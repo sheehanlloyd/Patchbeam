@@ -12,8 +12,13 @@ swift build -c "$config" --product Patchbeam
 swift build -c "$config" --product patchbeam-cli
 bin="$(swift build -c "$config" --show-bin-path)"
 
-app="build/$Config/Patchbeam.app"
-rm -rf "$app"
+final="build/$Config/Patchbeam.app"
+mkdir -p "build/$Config"
+# Assemble and sign in a private temp dir so Finder/LaunchServices can't touch the bundle
+# mid-signature (they may add FinderInfo to a registered app in build/), then move it into place.
+stage="$(mktemp -d)"
+trap 'rm -rf "$stage"' EXIT
+app="$stage/Patchbeam.app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources/Fixtures"
 cp "$bin/Patchbeam" "$app/Contents/MacOS/Patchbeam"
 cp "$bin/patchbeam-cli" "build/$Config/patchbeam-cli"
@@ -30,4 +35,8 @@ xattr -cr "$app"
 # This is NOT notarization and does not make the app trusted by Gatekeeper on other Macs.
 codesign --force --sign - --options runtime --timestamp=none "$app"
 codesign --verify --strict "$app"
+rm -rf "$final"
+mv "$app" "$final"
+codesign --verify --strict "$final"
+app="$final"
 echo "Built $app ($version build $build_number, ad-hoc signed, unsigned preview)"
