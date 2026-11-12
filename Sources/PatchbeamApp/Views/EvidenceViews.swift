@@ -88,22 +88,29 @@ struct ChangesView: View {
                         }
                     }
                 }
-                ScrollView([.vertical, .horizontal]) {
-                    if let diff {
-                        VStack(alignment: .leading, spacing: 0) {
-                            ForEach(diff.lines.prefix(Self.maxLines)) { line in
-                                Text(line.text.isEmpty ? " " : line.text)
-                                    .font(Theme.mono(11))
-                                    .foregroundStyle(line.color)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 6)
-                                    .background(line.background)
+                GeometryReader { viewport in
+                    ScrollView([.vertical, .horizontal]) {
+                        Group {
+                            if let diff {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    ForEach(diff.lines.prefix(Self.maxLines)) { line in
+                                        Text(line.text.isEmpty ? " " : line.text)
+                                            .font(Theme.mono(11))
+                                            .foregroundStyle(line.color)
+                                            .fixedSize()
+                                            .padding(.horizontal, 8)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .background(line.background)
+                                    }
+                                }
+                                .textSelection(.enabled)
+                                .padding(.vertical, 6)
+                            } else {
+                                ProgressView().controlSize(.small).padding()
                             }
                         }
-                        .textSelection(.enabled)
-                        .fixedSize(horizontal: true, vertical: false)
-                    } else {
-                        ProgressView().controlSize(.small).padding()
+                        // Pin to the top-leading corner; a 2D ScrollView otherwise centers content.
+                        .frame(minWidth: viewport.size.width, minHeight: viewport.size.height, alignment: .topLeading)
                     }
                 }
                 .background(RoundedRectangle(cornerRadius: 10).fill(Theme.background))

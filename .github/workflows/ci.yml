@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build, test, fixture demo (macOS 15, Apple silicon)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)"
+          xcodebuild -version
+          swift --version
+      - name: Prerequisites
+        run: ./scripts/bootstrap.sh --check
+      - name: Unit + integration tests
+        run: ./scripts/test.sh
+      - name: Headless fixture demo (red → green, DemoAgent, no model)
+        run: |
+          ./scripts/fixture-demo.sh --headless
+          ./scripts/fixture-demo.sh --headless --scenario wrongFixThenFix
+          ./scripts/fixture-demo.sh --headless --scenario approval
+      - name: Build app bundle (unsigned preview, ad-hoc signature)
+        run: |
+          ./scripts/build.sh release
+          plutil -p build/Release/Patchbeam.app/Contents/Info.plist | grep -E "LSUIElement|CFBundleIdentifier"
+          codesign --verify --strict build/Release/Patchbeam.app
+      - name: Documentation paths exist
+        run: ./scripts/check-docs.sh
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-results
+          path: build/test-results

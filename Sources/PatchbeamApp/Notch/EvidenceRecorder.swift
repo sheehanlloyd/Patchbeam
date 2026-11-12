@@ -11,6 +11,8 @@ final class EvidenceRecorder {
     private var timer: Timer?
     private var index = 0
     private let fps: Double
+    /// Describes the real app state for each frame (written to frames.tsv for captions).
+    var stateProvider: (() -> String)?
 
     init?(view: NSView, environment: [String: String] = ProcessInfo.processInfo.environment) {
         guard let dir = environment["PATCHBEAM_CAPTURE_DIR"], !dir.isEmpty else { return nil }
@@ -43,8 +45,21 @@ final class EvidenceRecorder {
     func captureFrame() {
         guard let rep = image(), let data = rep.representation(using: .png, properties: [:]) else { return }
         let url = directory.appendingPathComponent(String(format: "frame-%05d.png", index))
-        index += 1
         try? data.write(to: url)
+        let line = "\(index)\t\(Date().timeIntervalSince1970)\t\(stateProvider?() ?? "")\n"
+        let tsv = directory.appendingPathComponent("frames.tsv")
+        if let h = try? FileHandle(forWritingTo: tsv) {
+            h.seekToEndOfFile(); h.write(Data(line.utf8)); try? h.close()
+        } else {
+            try? Data(line.utf8).write(to: tsv)
+        }
+        index += 1
+    }
+
+    func note(_ text: String) {
+        let url = directory.appendingPathComponent("geometry.log")
+        let line = Data((text + "\n").utf8)
+        if let h = try? FileHandle(forWritingTo: url) { h.seekToEndOfFile(); h.write(line); try? h.close() } else { try? line.write(to: url) }
     }
 
     func still(_ name: String) {

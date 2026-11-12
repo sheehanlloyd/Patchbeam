@@ -7,9 +7,17 @@ import PatchbeamCore
 /// It uses the scripted DemoAgent (no model) and is labeled as such in every frame.
 @MainActor
 enum AutoDemo {
-    static func run(model: AppModel, recorder: EvidenceRecorder?, log: @escaping (String) -> Void) async {
-        func pause(_ s: Double) async { try? await Task.sleep(for: .seconds(s)) }
-        func shot(_ name: String) { recorder?.still(name); log("still \(name)") }
+    static func run(model: AppModel, recorder: EvidenceRecorder?, geometry: @escaping () -> String = { "" }, log: @escaping (String) -> Void) async {
+        // PATCHBEAM_AUTODEMO_PACE stretches only the *pauses between UI steps* (for a readable
+        // walkthrough); the repair itself always runs at its real speed.
+        let pace = Double(ProcessInfo.processInfo.environment["PATCHBEAM_AUTODEMO_PACE"] ?? "") ?? 1
+        func pause(_ s: Double) async { try? await Task.sleep(for: .seconds(s * pace)) }
+        func shot(_ name: String) {
+            recorder?.still(name)
+            let g = geometry()
+            recorder?.note("\(name): \(g)")
+            log("still \(name) | \(g)")
+        }
 
         recorder?.start()
         log("autodemo: dormant")

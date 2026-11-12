@@ -51,6 +51,14 @@ final class NotchPanelController {
         hosting.sizingOptions = []
         panel.contentView = hosting
         recorder = EvidenceRecorder(view: hosting)
+        recorder?.stateProvider = { [weak self] in
+            guard let self else { return "" }
+            let c = self.model.selected
+            let last = c.flatMap { self.model.events[$0.id]?.last?.summary } ?? ""
+            let clean = { (s: String) in s.replacingOccurrences(of: "\t", with: " ").replacingOccurrences(of: "\n", with: " ") }
+            return [self.model.presentation.rawValue, c?.status.rawValue ?? "", clean(c?.status.label ?? ""), clean(last),
+                    self.model.tab.rawValue, self.model.pendingConfirmation == nil ? "" : "confirm"].joined(separator: "\t")
+        }
         model.onPresentationChange = { [weak self] p in self?.present(p) }
         model.onRequestKeyFocus = { [weak self] in self?.focus() }
         observe()
@@ -118,6 +126,16 @@ final class NotchPanelController {
 
         panel.allowsKey = p == .expanded || p == .intake
         if !panel.allowsKey, panel.isKeyWindow { panel.resignKey() }
+    }
+
+    /// Live placement evidence: OS-reported notch vs. the panel's actual frame.
+    func geometryReport() -> String {
+        guard let s = screen, let g = geometry else { return "no screen" }
+        let f = panel.frame
+        return "screen=\(s.localizedName) id=\(s.id) builtIn=\(s.isBuiltIn) frame=\(s.frame) safeTop=\(s.safeAreaTop) "
+            + "auxL=\(s.auxiliaryTopLeft.map { "\($0)" } ?? "nil") auxR=\(s.auxiliaryTopRight.map { "\($0)" } ?? "nil") "
+            + "mode=\(g.layoutMode.rawValue) notch=\(g.notchRect) presentation=\(model.presentation.rawValue) panel=\(f) "
+            + "panelTop==screenTop:\(f.maxY == s.frame.maxY) panelMidX-notchMidX=\(f.midX - g.notchRect.midX) onScreen=\(s.frame.contains(f))"
     }
 
     func focus() {

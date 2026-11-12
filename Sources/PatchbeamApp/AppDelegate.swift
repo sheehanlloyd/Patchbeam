@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             if args.contains("--autodemo") {
                 UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                 onboardingWindow?.close()
-                await AutoDemo.run(model: model, recorder: panel?.recorder) { line in
+                await AutoDemo.run(model: model, recorder: panel?.recorder, geometry: { [weak self] in self?.panel?.geometryReport() ?? "" }) { line in
                     FileHandle.standardError.write(Data((line + "\n").utf8))
                 }
                 if args.contains("--quit-after") { NSApp.terminate(nil) }

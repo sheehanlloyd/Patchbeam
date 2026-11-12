@@ -23,6 +23,9 @@ rm -rf "$app/Contents/Resources/Fixtures/broken-python/__pycache__"
 [[ -f Resources/AppIcon.icns ]] && cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 plutil -lint "$app/Contents/Info.plist" >/dev/null
 
+# Copied files can carry Finder/provenance xattrs, which codesign rejects.
+xattr -cr "$app"
+
 # Ad-hoc signature only (no Developer ID): lets the bundle run locally with hardened runtime.
 # This is NOT notarization and does not make the app trusted by Gatekeeper on other Macs.
 codesign --force --sign - --options runtime --timestamp=none "$app"
