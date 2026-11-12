@@ -1,0 +1,10 @@
+.DS_Store
+.build/
+build/
+dist/
+*.xcresult
+DerivedData/
+.swiftpm/
+/artifacts/
+*.mov
+!docs/media/*.mp4
