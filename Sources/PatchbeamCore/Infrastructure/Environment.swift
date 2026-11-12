@@ -92,8 +92,22 @@ public enum ExecutableLocator {
 
 /// Canonical path helpers with symlink resolution, used before every filesystem decision.
 public enum PathSafety {
+    /// `realpath(3)` of the longest existing prefix, with the non-existent remainder appended.
+    /// (Foundation's `resolvingSymlinksInPath` strips `/private` only for paths that exist, so an
+    /// existing parent and a not-yet-created child could canonicalize to different roots.)
     public static func canonical(_ url: URL) -> URL {
-        url.standardizedFileURL.resolvingSymlinksInPath()
+        var existing = url.standardizedFileURL
+        var tail: [String] = []
+        while !FileManager.default.fileExists(atPath: existing.path), existing.path != "/" {
+            tail.insert(existing.lastPathComponent, at: 0)
+            existing.deleteLastPathComponent()
+        }
+        var buffer = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
+        let base = realpath(existing.path, &buffer) != nil ? String(cString: buffer) : existing.path
+        // Note: no `standardizedFileURL` here — it would strip `/private` again for existing paths.
+        var result = URL(fileURLWithPath: base, isDirectory: true)
+        for component in tail where component != "." { result.appendPathComponent(component) }
+        return result
     }
 
     /// True when `child` resolves to `parent` or a descendant of it (after symlink resolution).

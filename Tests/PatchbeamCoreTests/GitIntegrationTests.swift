@@ -247,6 +247,16 @@ struct GitIntegrationTests {
         #expect(FileManager.default.fileExists(atPath: repo.root.appendingPathComponent("README.md").path))
     }
 
+    /// Regression: an existing parent under /private/tmp and a not-yet-created child must
+    /// canonicalize to the same root (found by the GUI autodemo run).
+    @Test func containmentHoldsForNonexistentChildUnderPrivateTmp() throws {
+        let parent = URL(fileURLWithPath: "/private/tmp/pb-contain-\(UUID().uuidString)/Worktrees")
+        try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+        #expect(PathSafety.isContained(parent.appendingPathComponent("new-child"), in: parent))
+        #expect(PathSafety.isContained(URL(fileURLWithPath: "/tmp" + parent.path.dropFirst("/private/tmp".count) + "/x"), in: parent))
+        #expect(!PathSafety.isContained(parent.appendingPathComponent("../escape"), in: parent))
+    }
+
     @Test func symlinkEscapeIsDetected() throws {
         let base = FileManager.default.temporaryDirectory.appendingPathComponent("pb-sym-\(UUID().uuidString)")
         let inside = base.appendingPathComponent("inside")
