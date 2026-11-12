@@ -11,7 +11,8 @@
 - Claude Code adapter (stream-json; scoped to Read/Edit/Write; approvals deferred to Claude Code) and a scripted, clearly labeled DemoAgent.
 - Crash/restart reconciliation, SQLite persistence with migrations, Delete All Local History.
 - `patchbeam-cli` (headless demo, provider probe, live run), build/test/package/release scripts, CI.
-- Authentic demo media recorded from the running app (`scripts/record-demo.sh`).
+- Authentic demo media recorded from the running app (`scripts/record-demo.sh`), plus a live Claude Code clip (`LIVE=1`).
+- Live Claude Code 2.1.322 repair verified on the fixture (CLI and GUI).
 
 ### Known limitations
 See [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md#known-limitations).

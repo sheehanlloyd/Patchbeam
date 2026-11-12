@@ -45,7 +45,9 @@ Patchbeam is a small native Mac app that lives in your MacBook's notch. Paste a 
 - **0:29** Proof: after (exit 0, 3 passed) next to before (exit 1)
 - **0:35** Explicit apply confirmation → **0:39** applied to the working tree, nothing committed
 
-Every frame is Patchbeam's own panel window, rendered by the running app while it did the real work (real Git, real `python3 -m unittest`, real apply). Captions come from the app state recorded for each frame. The agent in the video is the **scripted DemoAgent (no model)**, and the video says so on screen. How the media is made, and what it doesn't show, is in [ADR-0003](docs/adr/0003-self-rendered-media.md).
+A second clip, [`Patchbeam-Agent-Run.mp4`](docs/media/Patchbeam-Agent-Run.mp4) (38 s, real time), shows the same flow with **real Claude Code 2.1.322** doing the edit. Patchbeam still runs the check itself.
+
+Every frame is Patchbeam's own panel window, rendered by the running app while it did the real work (real Git, real `python3 -m unittest`, real apply). Captions come from the app state recorded for each frame. The agent in the main video is the **scripted DemoAgent (no model)**. The agent clip is labeled as a live Claude Code run. Each video names its agent on every frame. How the media is made, and what it doesn't show, is in [ADR-0003](docs/adr/0003-self-rendered-media.md).
 
 <br clear="right">
 
@@ -137,11 +139,11 @@ Drag and drop has a keyboard alternative (**Paste**, **Choose Log…**). The sho
 
 | Provider | Run | Stream | Approve | Resume | Tested version | Status |
 |---|---|---|---|---|---|---|
-| **Claude Code** (headless `stream-json`) | ✓ | ✓ | ✗: approve in Claude Code's terminal | ✗ | 2.1.252 | Adapter built and contract-tested against a **real captured stream**. Auth detection and the logged-out failure path verified live. **A live, logged-in repair hasn't been run yet** (the build host's CLI is signed out). |
+| **Claude Code** (headless `stream-json`) | ✓ | ✓ | ✗: approve in Claude Code's terminal | ✗ | 2.1.322 (live); 2.1.252 (stream contract) | **Live repair verified** on the fixture, both in the app and via `patchbeam-cli run`: baseline exit 1 → Claude Code edits `calculator.py` → host check exit 0 → applied. About $0.05 per run. Contract tests use real captured streams (signed-in success, plus signed-out on both versions). |
 | DemoAgent (scripted, no model) | ✓ | ✓ | ✓ (scripted request) | ✗ | built-in | Repairs only the bundled fixture. Always labeled “Demo — no model used.” |
 | Codex app-server | — | — | — | — | — | Not built. The build host's Codex install is broken (missing native binary). See [ADR-0002](docs/adr/0002-claude-code-first-provider.md). |
 
-Live provider smoke test (after `claude auth login`; spends from your provider account, capped by `--budget`):
+Live provider smoke test (after `claude auth login`; spends from your provider account, capped by `--budget`; about $0.05 on the fixture):
 ```bash
 ./scripts/build.sh release
 build/Release/patchbeam-cli fixture --into /tmp/pb-live         # pristine broken repo + a real traceback.log
@@ -169,7 +171,7 @@ The SwiftUI panel sends intent to the orchestrator. The orchestrator creates a w
 
 ```bash
 ./scripts/bootstrap.sh --check        # prerequisites; installs nothing
-./scripts/test.sh                     # 114 tests: unit, Git integration, golden path
+./scripts/test.sh                     # 115 tests: unit, Git integration, golden path, provider contracts
 ./scripts/fixture-demo.sh --headless  # also: --scenario wrongFixThenFix | approval
 ./scripts/build.sh release            # app bundle + CLI
 ./scripts/record-demo.sh              # re-record docs/media from the real app

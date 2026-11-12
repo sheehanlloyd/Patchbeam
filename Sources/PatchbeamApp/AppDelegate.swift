@@ -32,10 +32,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             }
             // Developer/demo affordance: `--open intake|expanded|demo` (documented in README).
             let args = ProcessInfo.processInfo.arguments
-            if args.contains("--autodemo") {
+            if args.contains("--autodemo") || args.contains("--autodemo-live") {
                 UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                 onboardingWindow?.close()
-                await AutoDemo.run(model: model, recorder: panel?.recorder, geometry: { [weak self] in self?.panel?.geometryReport() ?? "" }) { line in
+                await AutoDemo.run(model: model, recorder: panel?.recorder, live: args.contains("--autodemo-live"), geometry: { [weak self] in self?.panel?.geometryReport() ?? "" }) { line in
                     FileHandle.standardError.write(Data((line + "\n").utf8))
                 }
                 if args.contains("--quit-after") { NSApp.terminate(nil) }

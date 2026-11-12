@@ -9,6 +9,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 command -v ffmpeg >/dev/null || { echo "ffmpeg is required for media encoding" >&2; exit 1; }
 pace="${PACE:-2.8}"
+# LIVE=1 records a run with the real Claude Code provider (must be signed in; spends a few cents).
+live="${LIVE:-0}"
+if [[ "$live" == 1 ]]; then
+  flag="--autodemo-live"
+  claude_version="$(claude --version 2>/dev/null | awk '{print $1}')"
+  agent_label="Claude Code ${claude_version} (real model, live)"
+else
+  flag="--autodemo"
+  agent_label="scripted DemoAgent (no model)"
+fi
 work="$(mktemp -d "${TMPDIR:-/tmp}/patchbeam-media.XXXXXX")"
 echo "work dir: $work"
 
@@ -17,11 +27,19 @@ pkill -x Patchbeam 2>/dev/null || true
 sleep 1
 open -W --env PATCHBEAM_HOME="$work/home" --env PATCHBEAM_CAPTURE_DIR="$work/capture" \
      --env PATCHBEAM_AUTODEMO_PACE="$pace" --stderr "$work/autodemo.log" \
-     build/Release/Patchbeam.app --args --autodemo --quit-after
+     build/Release/Patchbeam.app --args "$flag" --quit-after
 grep -q "autodemo: done status=applied" "$work/autodemo.log" || { echo "autodemo did not reach 'applied':" >&2; cat "$work/autodemo.log" >&2; exit 1; }
 
 mkdir -p docs/media
-swift scripts/compose-media.swift "$work/capture" "$work/composed" "real time" >/dev/null
+swift scripts/compose-media.swift "$work/capture" "$work/composed" "real time" "$agent_label" >/dev/null
+if [[ "$live" == 1 ]]; then
+  ffmpeg -y -loglevel error -framerate 12 -i "$work/composed/c-%05d.png" \
+    -c:v libx264 -pix_fmt yuv420p -preset slow -crf 20 -movflags +faststart -r 30 docs/media/Patchbeam-Agent-Run.mp4
+  for s in 05-running 08-review-proof; do cp "$work/capture/still-$s.png" "docs/media/live-$s.png"; done
+  cp "$work/autodemo.log" docs/media/autodemo-live.log
+  ffprobe -v error -show_entries format=duration -of csv=p=0 docs/media/Patchbeam-Agent-Run.mp4 | xargs printf 'Patchbeam-Agent-Run.mp4: %.1fs\n'
+  exit 0
+fi
 ffmpeg -y -loglevel error -framerate 12 -i "$work/composed/c-%05d.png" \
   -c:v libx264 -pix_fmt yuv420p -preset slow -crf 20 -movflags +faststart -r 30 docs/media/Patchbeam-Demo.mp4
 

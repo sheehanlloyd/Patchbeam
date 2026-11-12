@@ -175,7 +175,8 @@ public struct ClaudeStreamParser: Sendable {
 /// Approvals are not bridged, so `capabilities.approve == false`.
 public struct ClaudeCodeAdapter: AgentAdapter {
     public static let id = "claude-code"
-    public static let testedVersion = "2.1.252"
+    /// Live-tested (logged-in repair) on 2.1.322; stream contract also captured on 2.1.252.
+    public static let testedVersion = "2.1.322"
     public var searchPath: [String]
     public var model: String?
 

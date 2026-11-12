@@ -15,4 +15,4 @@ The recorded media follows this storyboard. Every frame comes from the running a
 | 9 | Applied | “Applied to your working tree” | Source repo passes `unittest` afterwards (asserted in CLI demo) |
 | 10 | Back to notch | Glance shows the finished capsule | Real panel |
 
-**Not shown, and not claimed:** the macOS desktop and menu bar around the panel, a pointer clicking (the run is driven through the app model), and a real LLM provider (the live Claude Code clip is blocked until `claude auth login`).
+**Not shown, and not claimed:** the macOS desktop and menu bar around the panel, a pointer clicking (the run is driven through the app model), and a real LLM provider in the *main* video. The separate `Patchbeam-Agent-Run.mp4` shows a live Claude Code 2.1.322 run of the same flow.

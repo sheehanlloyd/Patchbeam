@@ -14,6 +14,6 @@ Implement `ClaudeCodeAdapter` against the **installed** CLI:
 - The agent has no shell tool. **Patchbeam runs verification itself.**
 
 ## Consequences
-- A live run needs `claude auth login`. On the build host the standalone CLI reports `loggedIn: false`, and the captured real stream for that case (`authentication_failed`) is a contract test.
-- The success-path parser fixture is built from the documented SDK message types and labeled as such until a logged-in capture replaces it.
+- A live run needs `claude auth login`. Before sign-in the CLI reported `loggedIn: false`, and that real stream (`authentication_failed`) is a contract test on 2.1.252 and 2.1.322.
+- After sign-in (2026-11-12), a live repair succeeded on 2.1.322. Its redacted stream (`success-2.1.322.jsonl`) is now a contract test, next to the hand-built documented-shape fixture.
 - A Codex adapter can be added behind the same `AgentAdapter` protocol once a working install is available.

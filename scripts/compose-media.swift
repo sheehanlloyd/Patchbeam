@@ -13,6 +13,8 @@ guard args.count >= 3 else {
 let input = URL(fileURLWithPath: args[1])
 let output = URL(fileURLWithPath: args[2])
 let speedLabel = args.count > 3 ? args[3] : "real time"
+let agentLabel = args.count > 4 ? args[4] : "scripted DemoAgent (no model)"
+let isLive = !agentLabel.contains("DemoAgent")
 try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
 
 struct FrameState {
@@ -41,7 +43,7 @@ func caption(_ s: FrameState) -> (String, String) {
         return s.status.isEmpty ? ("Glance", "Hover the notch (≈200 ms dwell) or press ⌃⌥Space.")
             : ("Glance: \(s.label)", "At most two facts while collapsed.")
     case "intake":
-        return ("Intake: what broke?", "A real broken-python fixture repo, its failing traceback, the DemoAgent, and an explicitly approved check.")
+        return ("Intake: what broke?", "A real broken-python fixture repo, its failing traceback, \(isLive ? "Claude Code" : "the DemoAgent"), and an explicitly approved check.")
     default:
         if s.confirming { return ("Explicit apply", "Working tree only. Patchbeam checks the base commit and dirty files first. Nothing is committed or pushed.") }
         switch s.status {
@@ -94,7 +96,7 @@ for (n, name) in frameFiles.enumerated() {
     let (title, detail) = caption(state)
     draw(title, font: .systemFont(ofSize: 34, weight: .semibold), color: .white, in: CGRect(x: 120, y: 92, width: W - 240, height: 46))
     draw(detail, font: .systemFont(ofSize: 22), color: secondary, in: CGRect(x: 120, y: 58, width: W - 240, height: 30))
-    draw("Real Patchbeam app on macOS · scripted DemoAgent (no model) · app's own panel window, no desktop · \(speedLabel)",
+    draw("Real Patchbeam app on macOS · \(agentLabel) · app's own panel window, no desktop · \(speedLabel)",
          font: .systemFont(ofSize: 17), color: subdued, in: CGRect(x: 60, y: 18, width: W - 120, height: 24))
     NSGraphicsContext.restoreGraphicsState()
 

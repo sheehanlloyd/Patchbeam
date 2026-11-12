@@ -7,7 +7,7 @@ import PatchbeamCore
 /// It uses the scripted DemoAgent (no model) and is labeled as such in every frame.
 @MainActor
 enum AutoDemo {
-    static func run(model: AppModel, recorder: EvidenceRecorder?, geometry: @escaping () -> String = { "" }, log: @escaping (String) -> Void) async {
+    static func run(model: AppModel, recorder: EvidenceRecorder?, live: Bool = false, geometry: @escaping () -> String = { "" }, log: @escaping (String) -> Void) async {
         // PATCHBEAM_AUTODEMO_PACE stretches only the *pauses between UI steps* (for a readable
         // walkthrough); the repair itself always runs at its real speed.
         let pace = Double(ProcessInfo.processInfo.environment["PATCHBEAM_AUTODEMO_PACE"] ?? "") ?? 1
@@ -29,6 +29,16 @@ enum AutoDemo {
         shot("02-glance-empty")
 
         await model.prepareDemo()
+        if live {
+            // Same fresh fixture repo, but repaired by the real provider (not the scripted DemoAgent).
+            await model.refreshProviders()
+            guard model.providers[ClaudeCodeAdapter.id]?.isReady == true else {
+                log("autodemo: FAILED live mode needs a signed-in Claude Code (\(model.providers[ClaudeCodeAdapter.id]?.message ?? "missing"))")
+                recorder?.stop(); return
+            }
+            model.intake.providerID = ClaudeCodeAdapter.id
+            model.intake.isDemo = false
+        }
         await pause(1.0)
         shot("03-intake-demo")
         model.intake.checkApproved = true
@@ -40,7 +50,7 @@ enum AutoDemo {
         guard let id = model.selected?.id else { log("autodemo: FAILED to start: \(model.message?.title ?? "?")"); recorder?.stop(); return }
 
         var sawRunning = false
-        for _ in 0..<600 {
+        for _ in 0..<(live ? 3000 : 600) {
             await pause(0.1)
             guard let c = model.capsules.first(where: { $0.id == id }) else { continue }
             if c.status == .running && !sawRunning { sawRunning = true; await pause(0.6); shot("05-running") }
