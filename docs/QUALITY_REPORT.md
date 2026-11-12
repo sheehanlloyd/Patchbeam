@@ -6,14 +6,14 @@ Generated from executed commands on 2026-11-12. Each line is one of three things
 
 | Item | Value |
 |---|---|
-| Commit audited | `de29ea7` (clean clone from GitHub), plus the media/docs commits that follow it (`git log`) |
+| Commit audited | Clean-clone audit at `de29ea7`; published preview built from `db9efd0` (build 17) |
 | Host | Mac16,8 (MacBook Pro 14", Apple silicon), built-in Liquid Retina XDR **with physical notch**, 1512×982 pt @2x |
 | OS / arch | macOS 26.5.1 (25F80), arm64 |
 | Toolchain | Xcode 26.6 (17F113), Apple Swift 6.3.3; CI: GitHub `macos-15` runner, Xcode 16 |
 | Git / Python | 2.51.0 / 3.14.7 |
 | Provider CLI | Claude Code 2.1.252 (standalone CLI **signed out**); Codex 0.93.0 **broken install** |
-| App binary SHA-256 | `8dcea003c6160111d12ea746d467a39471644076b76b6341c222e18d0bc630f9` (`build/Release/Patchbeam.app/Contents/MacOS/Patchbeam`, build 15) |
-| Preview DMG SHA-256 | `2d70fcb8f004c502471cb8a06b79acd39eb30bff3d34e6d852595a44d5df3099` (`Patchbeam-0.1.0-arm64-unsigned-preview.dmg`) |
+| App binary SHA-256 | `2f3bc8add6a0b1ef8af5a6ec7e710a2dd255dc8f5fae7375327357be3da9de60` (`Patchbeam.app/Contents/MacOS/Patchbeam` inside the published DMG, build 17) |
+| Preview DMG SHA-256 | `f1c3fb9b7d46b7d1d1b55eafc8fbaf8f95f1ccefc599341790822485b0bd42fb`, published as pre-release [v0.1.0-preview](https://github.com/sheehanlloyd/Patchbeam/releases/tag/v0.1.0-preview). Re-downloaded from GitHub: `shasum -c` OK. |
 | Signing | Ad-hoc only (`codesign --sign -`, hardened runtime). **Not** Developer ID signed, **not** notarized. `spctl --assess` → `rejected` (expected). |
 
 ## Commands and results
@@ -27,7 +27,7 @@ Generated from executed commands on 2026-11-12. Each line is one of three things
 | `… --scenario wrongFixThenFix` | **Passed** | First attempt `reviewReadyFailed` (never green), one approved retry → verified |
 | `… --scenario approval` | **Passed** | `awaitingApproval` → Allow Once runs the real command (exit 1 reproduced) → verified |
 | `./scripts/check-docs.sh` | **Passed** once this file exists | Earlier CI failures were caused only by this missing report |
-| `./scripts/package-dmg.sh` | **Passed** | `hdiutil verify` ok; `codesign --verify` of the app *inside* the DMG ok; `shasum -c` ok |
+| `./scripts/package-dmg.sh` | **Passed** | `hdiutil verify` ok; `codesign --verify` of the app *inside* the DMG ok; `shasum -c` ok; installed copy of the build-17 DMG ran `--autodemo` → `applied` |
 | CI (`.github/workflows/ci.yml`) | **Passed** for tests, demos and bundle build; docs step fixed in this commit | Run 43239917574 step log |
 
 ### Bugs found by this verification and fixed (in git history)
@@ -38,6 +38,7 @@ Generated from executed commands on 2026-11-12. Each line is one of three things
 5. Lossy date encoding made reopened capsules compare unequal.
 6. UI, from reviewing the app's own rendered frames: header wrapping, truncated demo badge, beam highlight leaking outside its rail, the 2D diff scroll view clipping line starts, green proof hidden below the fold.
 7. DMG staging added xattrs after signing, which broke the ad-hoc signature inside the image.
+8. Intermittent codesign failure when Finder/LaunchServices touched the registered app in `build/`. The bundle is now signed in a private temp dir.
 
 ## Requirement verdicts (PRD §25)
 
