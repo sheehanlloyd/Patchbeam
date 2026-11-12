@@ -330,7 +330,7 @@ public actor RepairOrchestrator {
                 }
             case .completed:
                 terminal = event
-                try await mutate(id) { $0.agentSummary = event.summary }
+                try await mutate(id) { $0.agentSummary = event.metadata["resultText"] ?? event.summary }
             case .failed, .cancelled:
                 terminal = event
             default:

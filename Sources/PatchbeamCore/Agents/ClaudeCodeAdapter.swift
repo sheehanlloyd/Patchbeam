@@ -134,7 +134,13 @@ public struct ClaudeStreamParser: Sendable {
                 let detail = resultText.isEmpty ? subtype.replacingOccurrences(of: "_", with: " ") : String(resultText.prefix(300))
                 out.append(event(.failed, .done, "Agent couldn't complete this step: \(detail)", id: "result", meta))
             } else {
-                out.append(event(.completed, .verifying, resultText.isEmpty ? "Agent finished." : String(resultText.prefix(1200)), id: "result", meta))
+                // The final assistant text already appears as a `message` event, so the terminal event stays
+                // short; the full text is carried for the capsule's "agent summary" (model text, not proof).
+                var parts = ["Agent finished"]
+                if let turns = meta["turns"] { parts.append("\(turns) turns") }
+                if let cost = meta["costUSD"] { parts.append("$\(cost)") }
+                if !resultText.isEmpty { meta["resultText"] = String(resultText.prefix(4000)) }
+                out.append(event(.completed, .verifying, parts.joined(separator: " · "), id: "result", meta))
             }
             return out
         default:

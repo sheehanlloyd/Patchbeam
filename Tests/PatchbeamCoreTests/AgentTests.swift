@@ -45,9 +45,28 @@ struct ClaudeStreamTests {
         #expect(finished.allSatisfy { $0.metadata["exitCode"] == nil }, "no exit code invented for tool results")
         #expect(events.contains { $0.metadata["approvalUnsupported"] == "true" && $0.summary.contains("Bash") })
         #expect(events.last(where: { $0.kind == .completed })?.metadata["costUSD"] == "0.0123")
+        #expect(events.last(where: { $0.kind == .completed })?.summary == "Agent finished · 3 turns · $0.0123")
         #expect(parser.malformedLines == 1)
         #expect(events.contains { $0.summary.contains("Ignored 1 unparseable") })
         #expect(events.map(\.sequence) == Array(1...events.count), "monotonic ordering")
+    }
+
+    /// A real, logged-in Claude Code 2.1.322 repair of the broken-python fixture (redacted).
+    @Test func capturedSuccessfulRepairStreamNormalizes() throws {
+        let (events, parser) = try parse("success-2.1.322.jsonl")
+        #expect(events.first?.kind == .sessionStarted)
+        #expect(events.first?.metadata["tools"] == "Edit,Read,Write")
+        #expect(events.contains { $0.kind == .toolStarted && $0.summary == "Reading calculator.py" })
+        #expect(events.contains { $0.kind == .toolStarted && $0.summary == "Editing calculator.py" })
+        #expect(events.filter { $0.kind == .editObserved }.map { $0.metadata["path"] } == ["calculator.py"])
+        #expect(events.filter { $0.kind == .toolFinished }.allSatisfy { $0.metadata["exitCode"] == nil })
+        let terminal = events.filter { [.completed, .failed, .cancelled].contains($0.kind) }
+        #expect(terminal.map(\.kind) == [.completed])
+        #expect(terminal[0].summary.hasPrefix("Agent finished"), "terminal summary stays short")
+        #expect(terminal[0].metadata["costUSD"] != nil)
+        #expect(terminal[0].metadata["resultText"]?.contains("calculator.py") == true)
+        #expect(parser.malformedLines == 0)
+        #expect(events.last?.kind == .completed)
     }
 
     @Test func missingResultBecomesTransportFailure() {
