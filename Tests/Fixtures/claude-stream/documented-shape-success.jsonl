@@ -1,0 +1,9 @@
+{"type":"system","subtype":"init","cwd":"/WORKTREE","session_id":"11111111-1111-4111-8111-111111111111","tools":["Edit","Read","Write"],"mcp_servers":[],"model":"claude-sonnet-5-5","permissionMode":"acceptEdits","claude_code_version":"2.1.252"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"I'll look at calculator.py."},{"type":"tool_use","id":"toolu_01","name":"Read","input":{"file_path":"/WORKTREE/calculator.py"}}]},"session_id":"11111111-1111-4111-8111-111111111111"}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_01","content":"...file contents..."}]},"session_id":"11111111-1111-4111-8111-111111111111"}
+{"type":"assistant","message":{"id":"msg_02","role":"assistant","content":[{"type":"tool_use","id":"toolu_02","name":"Edit","input":{"file_path":"/WORKTREE/calculator.py","old_string":"base - tax","new_string":"base + tax"}}]},"session_id":"11111111-1111-4111-8111-111111111111"}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_02","content":"The file has been updated."}]},"session_id":"11111111-1111-4111-8111-111111111111"}
+{"type":"assistant","message":{"id":"msg_02","role":"assistant","content":[{"type":"tool_use","id":"toolu_02","name":"Edit","input":{"file_path":"/WORKTREE/calculator.py","old_string":"base - tax","new_string":"base + tax"}}]},"session_id":"11111111-1111-4111-8111-111111111111"}
+not json at all
+{"type":"stream_event","event":{"type":"content_block_delta"}}
+{"type":"result","subtype":"success","is_error":false,"result":"Root cause: total() subtracted tax. Changed calculator.py to add it.","num_turns":3,"duration_ms":8123,"total_cost_usd":0.0123,"permission_denials":[{"tool_name":"Bash","tool_use_id":"toolu_03","tool_input":{"command":"python3 -m unittest"}}],"session_id":"11111111-1111-4111-8111-111111111111"}
