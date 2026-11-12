@@ -1,6 +1,6 @@
 # Patchbeam Build Plan
 
-This plan follows the gates in §24 of [`PATCHBEAM_MASTER_PRD.md`](../PATCHBEAM_MASTER_PRD.md). A gate counts as done only when its build and tests have run and the evidence is recorded in [`QUALITY_REPORT.md`](QUALITY_REPORT.md).
+This plan follows the gates in §24 of [`PRD.md`](PRD.md). A gate counts as done only when its build and tests have run and the evidence is recorded in [`QUALITY_REPORT.md`](QUALITY_REPORT.md).
 
 ## Gate 0: environment audit (done 2026-11-11)
 

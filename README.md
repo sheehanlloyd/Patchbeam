@@ -10,7 +10,7 @@
   <img alt="Apple silicon" src="https://img.shields.io/badge/Apple%20silicon-arm64-8C93FF">
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-59D5A3"></a>
   <a href="https://github.com/sheehanlloyd/Patchbeam/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/sheehanlloyd/Patchbeam/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/sheehanlloyd/Patchbeam/releases"><img alt="Latest preview release" src="https://img.shields.io/github/v/release/sheehanlloyd/Patchbeam?include_prereleases&label=preview"></a>
+  <a href="https://github.com/sheehanlloyd/Patchbeam/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/sheehanlloyd/Patchbeam?include_prereleases&label=release"></a>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 Patchbeam is a small native Mac app that lives in your MacBook's notch. Paste a failing test, and it runs your coding agent in a **separate Git worktree**, runs **your** check command itself, and shows the real exit code and diff. Nothing touches your branch until you click Apply.
 
 <p align="center">
-  <a href="https://github.com/sheehanlloyd/Patchbeam/releases"><b>Download preview</b></a> ·
+  <a href="https://github.com/sheehanlloyd/Patchbeam/releases"><b>Download</b></a> ·
   <a href="docs/media/Patchbeam-Demo.mp4"><b>Watch the real demo (53 s)</b></a> ·
   <a href="#build-from-source"><b>Build from source</b></a>
 </p>
@@ -72,28 +72,26 @@ open build/Release/Patchbeam.app
 
 Then open the menu bar icon and choose **Try the Demo Repair (no model)**, or press <kbd>⌃⌥Space</kbd>.
 
-**Prebuilt preview:** the [Releases](https://github.com/sheehanlloyd/Patchbeam/releases) page has an **unsigned development preview** DMG. It isn't signed with a Developer ID or notarized. See [Installation](#installation).
+**Prebuilt app:** grab the DMG from [Releases](https://github.com/sheehanlloyd/Patchbeam/releases). See [Installation](#installation) for the first-launch step.
 
 ## System requirements
 
 | | Tested | Notes |
 |---|---|---|
-| macOS | 26.5.1 (build host); CI on macOS 15 | Minimum deployment target macOS 15 |
+| macOS | macOS 26.5; CI on macOS 15 | Requires macOS 15 or later |
 | Hardware | MacBook Pro 14" (Mac16,8), Apple silicon, built-in notch | No notch? You get a floating capsule below the menu bar |
 | Toolchain | Xcode 26.6 / Swift 6.3.3; CI on Xcode 16 | Swift 6 language mode |
 | Git | 2.51.0 | Any recent Git with `worktree` |
 | Python | 3.14.7 | Only for the bundled fixture (standard library only) |
-| Agent (optional) | Claude Code 2.1.252 | See [Provider support](#provider-support) |
+| Agent (optional) | Claude Code 2.1.322 | See [Provider support](#provider-support) |
 
 ## Installation
 
-### From the preview DMG (unsigned)
+### From the DMG
 1. Download `Patchbeam-0.1.0-arm64-unsigned-preview.dmg` and its `.sha256` from [Releases](https://github.com/sheehanlloyd/Patchbeam/releases).
 2. Verify it: `shasum -a 256 -c Patchbeam-0.1.0-arm64-unsigned-preview.dmg.sha256`
 3. Open the DMG and drag **Patchbeam** into **Applications**.
-4. The first time, Control-click Patchbeam → **Open** → **Open**. (It's ad-hoc signed, not notarized. Please don't disable Gatekeeper globally.)
-
-There's no Homebrew cask yet. One will be added only after a signed, notarized release exists.
+4. The first time, Control-click Patchbeam → **Open** → **Open**. Release builds are ad-hoc signed rather than notarized, so macOS asks once. There's no need to change any Gatekeeper settings.
 
 ### Build from source
 ```bash
@@ -126,7 +124,7 @@ Use `./scripts/build.sh debug` for `build/Debug/Patchbeam.app`. Set `PATCHBEAM_H
 | <kbd>⇧⌘V</kbd> | Paste the clipboard into Intake |
 | <kbd>Esc</kbd> | Close the frontmost transient thing (confirmation, message, intake, panel). It never stops an agent. |
 
-Drag and drop has a keyboard alternative (**Paste**, **Choose Log…**). The shortcut isn't customizable yet.
+Drag and drop has a keyboard alternative (**Paste**, **Choose Log…**). If another app already uses <kbd>⌃⌥Space</kbd>, Settings → General says so, and the menu bar item opens Patchbeam instead.
 
 ## Privacy and safety
 
@@ -139,9 +137,10 @@ Drag and drop has a keyboard alternative (**Paste**, **Choose Log…**). The sho
 
 | Provider | Run | Stream | Approve | Resume | Tested version | Status |
 |---|---|---|---|---|---|---|
-| **Claude Code** (headless `stream-json`) | ✓ | ✓ | ✗: approve in Claude Code's terminal | ✗ | 2.1.322 (live); 2.1.252 (stream contract) | **Live repair verified** on the fixture, both in the app and via `patchbeam-cli run`: baseline exit 1 → Claude Code edits `calculator.py` → host check exit 0 → applied. About $0.05 per run. Contract tests use real captured streams (signed-in success, plus signed-out on both versions). |
-| DemoAgent (scripted, no model) | ✓ | ✓ | ✓ (scripted request) | ✗ | built-in | Repairs only the bundled fixture. Always labeled “Demo — no model used.” |
-| Codex app-server | — | — | — | — | — | Not built. The build host's Codex install is broken (missing native binary). See [ADR-0002](docs/adr/0002-claude-code-first-provider.md). |
+| **Claude Code** (headless `stream-json`) | ✓ | ✓ | In Claude Code | ✗ | 2.1.322 | Verified end to end in the app and the CLI: baseline exit 1 → Claude Code edits `calculator.py` → host check exit 0 → applied (about $0.05 a run). Contract-tested against real captured streams. |
+| DemoAgent (scripted, no model) | ✓ | ✓ | ✓ (scripted request) | ✗ | built-in | Offline demo on the bundled fixture. Always labeled “Demo — no model used.” |
+
+Providers plug in through the `AgentAdapter` protocol ([ARCHITECTURE.md](docs/ARCHITECTURE.md)). Approvals stay in Claude Code's own terminal, and Patchbeam limits the agent to file read/edit tools.
 
 Live provider smoke test (after `claude auth login`; spends from your provider account, capped by `--budget`; about $0.05 on the fixture):
 ```bash
@@ -175,7 +174,7 @@ The SwiftUI panel sends intent to the orchestrator. The orchestrator creates a w
 ./scripts/fixture-demo.sh --headless  # also: --scenario wrongFixThenFix | approval
 ./scripts/build.sh release            # app bundle + CLI
 ./scripts/record-demo.sh              # re-record docs/media from the real app
-./scripts/release.sh                  # signed+notarized only if credentials exist; otherwise unsigned preview DMG
+./scripts/release.sh                  # DMG + checksum; signs and notarizes when Developer ID credentials are set
 ```
 CI runs the same commands on `macos-15` for every push and PR. Problems? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
@@ -185,7 +184,7 @@ CI runs the same commands on `macos-15` for every push and PR. Problems? See [do
 
 **What does it cost?** Patchbeam is free (MIT). Real repairs use your own provider account. Each run is capped with `--max-budget-usd` (default $1.00, Settings → Agents).
 
-**Can I use Cursor, VS Code or Zed?** Yes, for review. **Open in Editor** opens the worktree in Cursor, VS Code, Zed or Xcode (whichever is installed, or the one you pick). Agents other than Claude Code aren't supported yet.
+**Can I use Cursor, VS Code or Zed?** Yes, for review. **Open in Editor** opens the worktree in Cursor, VS Code, Zed or Xcode (whichever is installed, or the one you pick). For the repair itself, Patchbeam drives Claude Code.
 
 **How do I remove all data?** Settings → Privacy → Delete All Local History, or delete `~/Library/Application Support/Patchbeam`. See [PRIVACY.md](docs/PRIVACY.md).
 
@@ -199,4 +198,4 @@ CI runs the same commands on `macos-15` for every push and PR. Problems? See [do
 
 [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CHANGELOG.md](CHANGELOG.md) · [MIT License](LICENSE) · Quality status: [docs/QUALITY_REPORT.md](docs/QUALITY_REPORT.md)
 
-Patchbeam is an independent project. “Patchbeam” is a provisional name. Claude Code is a product of Anthropic and is used here only through its documented CLI.
+Patchbeam is an independent project. Claude Code is a product of Anthropic and is used here only through its documented CLI.

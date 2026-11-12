@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make Patchbeam better. The bar is **one reliable golden path** over many half-working features (see [PATCHBEAM_MASTER_PRD.md](PATCHBEAM_MASTER_PRD.md) §0).
+Thanks for helping make Patchbeam better. The bar is **one reliable golden path** over many half-working features (see [docs/PRD.md](docs/PRD.md) §0).
 
 ## Setup
 ```bash
