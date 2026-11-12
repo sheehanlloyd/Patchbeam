@@ -11,7 +11,7 @@ public enum CapsuleStateMachine {
         .running: [.awaitingApproval, .verifying, .reviewReadyUnverified, .failed, .cancelling, .interrupted],
         .awaitingApproval: [.running, .failed, .cancelling, .interrupted],
         .verifying: [.reviewReadyVerified, .reviewReadyFailed, .reviewReadyUnverified, .failed, .cancelling, .interrupted],
-        .reviewReadyVerified: [.applied, .kept, .discarded, .verifying],
+        .reviewReadyVerified: [.applied, .kept, .discarded, .verifying, .reviewReadyUnverified],
         .reviewReadyFailed: [.retrying, .kept, .discarded, .verifying],
         .reviewReadyUnverified: [.applied, .kept, .discarded, .verifying],
         .retrying: [.running, .failed, .cancelling, .interrupted],

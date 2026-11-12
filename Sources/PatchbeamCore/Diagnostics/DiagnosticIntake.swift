@@ -188,11 +188,18 @@ public enum DiagnosticIntake {
         return try fromText(String(decoding: data, as: UTF8.self), sourceName: url.lastPathComponent, scanner: scanner)
     }
 
-    /// Best short title: the last exception/assertion line, else the first non-empty line.
+    /// Best short title: the last exception/assertion line, then a runner failure line,
+    /// else the first non-empty line.
     public static func inferTitle(_ text: String) -> String {
         let lines = text.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        let patterns = ["Error:", "Error ", "Exception", "FAILED", "FAIL ", "error:", "panic:", "fatal:"]
-        let candidate = lines.last { line in patterns.contains { line.contains($0) } } ?? lines.first ?? "Untitled diagnostic"
+        let strong = try? NSRegularExpression(pattern: #"(\b\w*(Error|Exception|Failure)\b:?|^error(\[\w+\])?:|^panic:|^fatal( error)?:|Fatal error:)"#)
+        func matchesStrong(_ s: String) -> Bool {
+            strong?.firstMatch(in: s, range: NSRange(location: 0, length: (s as NSString).length)) != nil
+        }
+        let weak = ["FAILED", "FAIL ", "FAIL:", "failed"]
+        let candidate = lines.last(where: matchesStrong)
+            ?? lines.last { line in weak.contains { line.contains($0) } }
+            ?? lines.first ?? "Untitled diagnostic"
         return candidate.count > 90 ? String(candidate.prefix(89)) + "…" : candidate
     }
 

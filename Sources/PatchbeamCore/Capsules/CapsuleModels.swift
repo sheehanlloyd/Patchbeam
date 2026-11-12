@@ -271,6 +271,9 @@ public struct Capsule: Codable, Sendable, Equatable, Identifiable {
     public var disposition: CapsuleDisposition?
     public var agentSummary: String?
     public var pendingApproval: ApprovalRequest?
+    /// Exact reverse-apply command recorded after a successful apply (shown, never auto-run).
+    public var rollbackCommand: [String]?
+    public var baselineResult: VerificationRecord.Result?
 
     public static let maxAttempts = 2  // one initial attempt + one user-approved retry (PRD §6 Journey C)
 
