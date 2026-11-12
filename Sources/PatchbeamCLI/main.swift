@@ -13,6 +13,7 @@ struct PatchbeamCLI {
             switch command {
             case "demo": exit(try await demo(args))
             case "probe": exit(await probe())
+            case "fixture": exit(try await fixture(args))
             case "run": exit(try await run(args))
             case "-h", "--help", "help": usage(); exit(0)
             default: usage(); exit(2)
@@ -33,6 +34,8 @@ struct PatchbeamCLI {
           demo --headless [--scenario fix|wrongFixThenFix|approval] [--keep] [--home DIR]
               Create a fresh broken-python fixture repo in a temp dir, repair it with the scripted
               DemoAgent (no model), verify red→green, apply, and assert every safety invariant.
+          fixture --into DIR
+              Create a pristine broken-python repo in DIR and write DIR/traceback.log from a real test run.
           probe
               Report provider availability (no secrets are read).
           run --provider claude-code --repo PATH --diagnostic-file FILE [--check "CMD"] --yes [--apply] [--budget USD]
@@ -171,6 +174,23 @@ struct PatchbeamCLI {
         return failures.isEmpty ? 0 : 1
     }
 
+    // MARK: fixture
+
+    static func fixture(_ args: [String]) async throws -> Int32 {
+        guard let dir = value("--into", in: args) else { usage(); return 2 }
+        let parent = URL(fileURLWithPath: dir, isDirectory: true)
+        try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
+        let repo = try await FixtureLibrary.makeBrokenPythonRepo(in: parent, git: try GitClient.locate())
+        let python = ExecutableLocator.find("python3") ?? URL(fileURLWithPath: "/usr/bin/python3")
+        let r = try await ProcessRunner().run(ProcessSpec(executable: python, arguments: FixtureLibrary.checkCommand.dropFirst().map { $0 },
+                                                          workingDirectory: repo, environment: MinimalEnvironment.make(extra: ["PYTHONDONTWRITEBYTECODE": "1"])))
+        let log = parent.appendingPathComponent("traceback.log")
+        try Data(("$ python3 -m unittest -v\n" + r.stdoutString + r.stderrString).utf8).write(to: log)
+        line("repo:      \(repo.path)")
+        line("traceback: \(log.path)  (real run, exit \(r.exitCode.map(String.init) ?? "signal"))")
+        return 0
+    }
+
     // MARK: probe
 
     static func probe() async -> Int32 {
@@ -205,7 +225,7 @@ struct PatchbeamCLI {
         line("  repo:      \(snapshot.root.path) @ \(snapshot.shortHead)\(snapshot.isDirty ? "  ⚠︎ uncommitted edits are NOT included" : "")")
         line("  worktree:  \(paths.worktrees.path)/<capsule-id>")
         line("  check:     \(recipe?.display ?? "none — result will be Not verified")")
-        line("  sends:     the diagnostic below (\(diag.byteCount) bytes) to the provider; it may read files in the worktree")
+        line("  sends:     the diagnostic in \(diagPath) (\(diag.byteCount) bytes) to the provider; it may read files in the worktree")
         if !diag.findings.isEmpty { line("  ⚠︎ possible secrets in diagnostic: \(Set(diag.findings).sorted().joined(separator: ", ")) — redacted before sending") }
         guard args.contains("--yes") else {
             line("\nRe-run with --yes to start.")

@@ -8,3 +8,4 @@ DerivedData/
 /artifacts/
 *.mov
 !docs/media/*.mp4
+dist/

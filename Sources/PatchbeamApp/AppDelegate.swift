@@ -18,6 +18,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         AppDelegate.shared = self
         NSApp.setActivationPolicy(.accessory)
         panel = NotchPanelController(model: model)
+        if ProcessInfo.processInfo.environment["PATCHBEAM_TIMING"] == "1" {
+            // Measured after the panel is ordered front on screen; dyld/runtime setup before main is not included.
+            FileHandle.standardError.write(Data(String(format: "timing: panel-visible %.0f ms after main\n", Date().timeIntervalSince(processStart) * 1000).utf8))
+        }
         installStatusItem()
         hotKey.register { [weak self] in self?.model.toggleFromHotKey() }
         model.hotKeyStatus = hotKey.lastError
