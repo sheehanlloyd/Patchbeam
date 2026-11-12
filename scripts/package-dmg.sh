@@ -10,7 +10,9 @@ suffix="${PATCHBEAM_DMG_SUFFIX:--unsigned-preview}"
 name="Patchbeam-$version-arm64$suffix"
 mkdir -p dist
 stage="$(mktemp -d)"
-cp -R "$app" "$stage/Patchbeam.app"
+# ditto without xattrs/resource forks so the existing signature stays valid inside the image.
+ditto --norsrc --noextattr --noqtn "$app" "$stage/Patchbeam.app"
+codesign --verify --strict "$stage/Patchbeam.app"
 ln -s /Applications "$stage/Applications"
 cat > "$stage/READ ME FIRST.txt" <<TXT
 Patchbeam $version — UNSIGNED DEVELOPMENT PREVIEW (Apple silicon, macOS 15+)
@@ -27,5 +29,10 @@ hdiutil create -quiet -volname "Patchbeam $version" -srcfolder "$stage" -fs APFS
 rm -rf "$stage"
 (cd dist && shasum -a 256 "$name.dmg" > "$name.dmg.sha256")
 hdiutil verify -quiet "dist/$name.dmg"
+# Re-verify the signature of the app as it exists inside the finished image.
+mnt="$(mktemp -d)"
+hdiutil attach -quiet -nobrowse -readonly -mountpoint "$mnt" "dist/$name.dmg"
+codesign --verify --strict "$mnt/Patchbeam.app" && echo "codesign --verify (inside DMG): ok"
+hdiutil detach -quiet "$mnt"
 echo "dist/$name.dmg"
 cat "dist/$name.dmg.sha256"

@@ -1,0 +1,17 @@
+  0.0s  dormant                          Activity 
+  3.5s  glance                           Activity 
+  7.2s  intake                           Activity 
+ 12.2s  expanded  ready                  Activity 
+ 12.2s  expanded  preparingWorktree      Activity 
+ 12.3s  expanded  running                Activity 
+ 16.4s  expanded  verifying              Activity 
+ 16.5s  expanded  reviewReadyVerified    Changes  
+ 19.6s  expanded  reviewReadyVerified    Activity 
+ 23.6s  expanded  reviewReadyVerified    Changes  
+ 28.9s  expanded  reviewReadyVerified    Proof    
+ 34.6s  expanded  reviewReadyVerified    Proof    confirm
+ 39.3s  expanded  reviewReadyVerified    Proof    
+ 39.4s  expanded  applied                Proof    
+ 43.8s  dormant   applied                Proof    
+ 46.8s  glance    applied                Proof    
+ 50.8s  dormant   applied                Proof    

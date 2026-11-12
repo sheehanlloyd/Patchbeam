@@ -14,14 +14,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/hero.gif" width="860" alt="The real Patchbeam panel at 3x speed: intake with a failing Python traceback, the scripted DemoAgent editing calculator.py in a separate worktree, the Git diff, a host-run check going from exit 1 to exit 0, and an explicit apply.">
+  <img src="docs/media/hero.gif" width="860" alt="The real Patchbeam panel at 5x speed: intake with a failing Python traceback, the scripted DemoAgent editing calculator.py in a separate worktree, the Git diff, a host-run check going from exit 1 to exit 0, and an explicit apply.">
 </p>
 
 Patchbeam is a small native Mac app that lives in your MacBook's notch. Paste a failing test, and it runs your coding agent in a **separate Git worktree**, runs **your** check command itself, and shows the real exit code and diff. Nothing touches your branch until you click Apply.
 
 <p align="center">
   <a href="https://github.com/sheehanlloyd/Patchbeam/releases"><b>Download preview</b></a> ·
-  <a href="docs/media/Patchbeam-Demo.mp4"><b>Watch the real demo (54 s)</b></a> ·
+  <a href="docs/media/Patchbeam-Demo.mp4"><b>Watch the real demo (53 s)</b></a> ·
   <a href="#build-from-source"><b>Build from source</b></a>
 </p>
 
@@ -35,14 +35,15 @@ Patchbeam is a small native Mac app that lives in your MacBook's notch. Paste a 
 
 <img src="docs/media/08-review-proof.png" width="420" align="right" alt="Proof tab: After (patch) Selected checks passed, exit 0, 3 tests ran, 3 passed; Before (base) Check failed, exit 1, 2 passed, 1 failed.">
 
-[`Patchbeam-Demo.mp4`](docs/media/Patchbeam-Demo.mp4) (54 s, real time) is a complete run of the app on this repo's bundled `broken-python` fixture:
+[`Patchbeam-Demo.mp4`](docs/media/Patchbeam-Demo.mp4) (53 s, real time) is a complete run of the app on this repo's bundled `broken-python` fixture. Chapter times come from the app state recorded for each frame ([chapters.txt](docs/media/chapters.txt)):
 
-- **0:00** Dormant island and glance
-- **0:06** Intake: traceback, freshly generated fixture repo, DemoAgent, check approval
-- **0:15** Worktree created, baseline check **fails (exit 1)**, agent edits `calculator.py`
+- **0:00** Dormant island, then glance
+- **0:07** Intake: traceback, freshly generated fixture repo, DemoAgent, check approval
+- **0:12** Worktree created, baseline check **fails (exit 1)**, agent edits `calculator.py`
+- **0:16** Patchbeam runs the check: **exit 0**, *Selected checks passed*
 - **0:24** Changes: the Git diff
-- **0:30** Proof: **exit 0**, 3 tests passed, next to the red baseline
-- **0:36** Explicit apply to the working tree; nothing committed
+- **0:29** Proof: after (exit 0, 3 passed) next to before (exit 1)
+- **0:35** Explicit apply confirmation → **0:39** applied to the working tree, nothing committed
 
 Every frame is Patchbeam's own panel window, rendered by the running app while it did the real work (real Git, real `python3 -m unittest`, real apply). Captions come from the app state recorded for each frame. The agent in the video is the **scripted DemoAgent (no model)**, and the video says so on screen. How the media is made, and what it doesn't show, is in [ADR-0003](docs/adr/0003-self-rendered-media.md).
 
@@ -168,7 +169,7 @@ The SwiftUI panel sends intent to the orchestrator. The orchestrator creates a w
 
 ```bash
 ./scripts/bootstrap.sh --check        # prerequisites; installs nothing
-./scripts/test.sh                     # 115 tests: unit, Git integration, golden path
+./scripts/test.sh                     # 114 tests: unit, Git integration, golden path
 ./scripts/fixture-demo.sh --headless  # also: --scenario wrongFixThenFix | approval
 ./scripts/build.sh release            # app bundle + CLI
 ./scripts/record-demo.sh              # re-record docs/media from the real app

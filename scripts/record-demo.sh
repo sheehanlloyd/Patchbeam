@@ -25,14 +25,27 @@ swift scripts/compose-media.swift "$work/capture" "$work/composed" "real time" >
 ffmpeg -y -loglevel error -framerate 12 -i "$work/composed/c-%05d.png" \
   -c:v libx264 -pix_fmt yuv420p -preset slow -crf 20 -movflags +faststart -r 30 docs/media/Patchbeam-Demo.mp4
 
-# Hero loop: the same captured frames at 3x speed, labeled as such.
+# Hero loop: from intake onward, every 5th captured frame (= 5x speed, labeled on every frame).
 mkdir -p "$work/hero"
-i=0; for f in $(ls "$work/capture"/frame-*.png | awk 'NR % 3 == 1'); do cp "$f" "$work/hero/$(printf 'frame-%05d.png' $i)"; i=$((i+1)); done
-awk -F'\t' 'NR % 3 == 1 { $1 = int((NR-1)/3); print }' OFS='\t' "$work/capture/frames.tsv" > "$work/hero/frames.tsv"
-swift scripts/compose-media.swift "$work/hero" "$work/hero-composed" "3× speed" >/dev/null
+start="$(awk -F'\t' '$3 == "intake" { print $1; exit }' "$work/capture/frames.tsv")"
+awk -F'\t' -v s="$start" 'BEGIN{OFS="\t"} $1 >= s && ($1 - s) % 5 == 0 { print }' "$work/capture/frames.tsv" > "$work/hero/src.tsv"
+i=0
+: > "$work/hero/frames.tsv"
+while IFS=$'\t' read -r idx rest; do
+  cp "$work/capture/$(printf 'frame-%05d.png' "$idx")" "$work/hero/$(printf 'frame-%05d.png' "$i")"
+  printf '%s\t%s\n' "$i" "$rest" >> "$work/hero/frames.tsv"
+  i=$((i+1))
+done < "$work/hero/src.tsv"
+swift scripts/compose-media.swift "$work/hero" "$work/hero-composed" "5× speed" >/dev/null
 ffmpeg -y -loglevel error -framerate 12 -i "$work/hero-composed/c-%05d.png" \
   -vf "scale=960:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a" \
   -loop 0 docs/media/hero.gif
+
+# Chapter timestamps for the README, from the recorded state of each frame (12 fps).
+awk -F'\t' '
+  { key = $3 "/" $4 "/" $7 "/" $8 }
+  key != last { printf "%5.1fs  %-9s %-22s %-8s %s\n", $1/12, $3, $4, $7, $8; last = key }
+' "$work/capture/frames.tsv" > docs/media/chapters.txt
 
 for s in 03-intake-demo 05-running 07-review-changes 08-review-proof 09-apply-confirm 10-applied; do
   [[ -f "$work/capture/still-$s.png" ]] && cp "$work/capture/still-$s.png" "docs/media/$s.png"
@@ -40,4 +53,5 @@ done
 cp "$work/capture/geometry.log" docs/media/geometry-evidence.log
 cp "$work/autodemo.log" docs/media/autodemo.log
 ffprobe -v error -show_entries format=duration -of csv=p=0 docs/media/Patchbeam-Demo.mp4 | xargs printf 'Patchbeam-Demo.mp4: %.1fs\n'
+ffprobe -v error -show_entries format=duration -of csv=p=0 docs/media/hero.gif | xargs printf 'hero.gif: %.1fs\n'
 ls -lh docs/media
